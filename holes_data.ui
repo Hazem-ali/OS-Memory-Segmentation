@@ -150,16 +150,6 @@
        <property name="title">
         <string/>
        </property>
-       <widget class="QSpinBox" name="HoleSizeSpin">
-        <property name="geometry">
-         <rect>
-          <x>200</x>
-          <y>10</y>
-          <width>101</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
        <widget class="QLabel" name="H1">
         <property name="geometry">
          <rect>
@@ -179,13 +169,23 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QSpinBox" name="BaseAddressSpin">
+       <widget class="QLineEdit" name="BaseAddressInput">
         <property name="geometry">
          <rect>
           <x>70</x>
           <y>10</y>
-          <width>101</width>
-          <height>22</height>
+          <width>113</width>
+          <height>20</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="HoleSizeInput">
+        <property name="geometry">
+         <rect>
+          <x>200</x>
+          <y>10</y>
+          <width>113</width>
+          <height>20</height>
          </rect>
         </property>
        </widget>

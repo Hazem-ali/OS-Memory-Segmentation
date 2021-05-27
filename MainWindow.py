@@ -9,9 +9,37 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import holes_data
+import errordialog
 
 class Ui_MainWindow(object):
+    
+    # This Function To open a new window
+    def openHolesForm(self,memory_size,no_of_holes):
+
+        # Checking for int parsing errors before switching into the new window
+        try:
+            # print(memory_size)
+            memory_size = int(memory_size)
+            no_of_holes = int(no_of_holes)
+            
+            # if integer parsing has no errors
+            self.window = QtWidgets.QMainWindow()
+            self.ui = holes_data.Ui_HolesForm(memory_size, no_of_holes)
+            self.ui.setupUi(self.window)
+            self.window.show()
+        except:
+            self.window = QtWidgets.QDialog()
+            self.ui = errordialog.Ui_Dialog("Please Write Valid Numbers")
+            self.ui.setupUi(self.window)
+            self.window.show()
+            
+            
+            
+        
+    
+    
+    
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(537, 492)
@@ -180,9 +208,16 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         font.setBold(True)
         font.setWeight(75)
+        
+        # we need here to pass memory size into holes_data window
+        # because there we will pass all data for processing
         self.memSizeLabel.setFont(font)
         self.memSizeLabel.setObjectName("memSizeLabel")
-        self.HolesButton = QtWidgets.QPushButton(self.centralwidget)
+        
+        self.HolesButton = QtWidgets.QPushButton(self.centralwidget,clicked=lambda:
+                                                self.openHolesForm(self.memSizeBox.text(), self.holes_number.text()))
+        # self.memSizeBox.currentData()
+        
         self.HolesButton.setGeometry(QtCore.QRect(190, 260, 171, 41))
         self.HolesButton.setObjectName("HolesButton")
         self.MainLabel = QtWidgets.QLabel(self.centralwidget)
@@ -194,8 +229,8 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.MainLabel.setFont(font)
         self.MainLabel.setObjectName("MainLabel")
-        self.memSizeBox = QtWidgets.QSpinBox(self.centralwidget)
-        self.memSizeBox.setGeometry(QtCore.QRect(210, 120, 131, 22))
+        self.memSizeBox = QtWidgets.QLineEdit(self.centralwidget)
+        self.memSizeBox.setGeometry(QtCore.QRect(220, 120, 111, 20))
         self.memSizeBox.setObjectName("memSizeBox")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)

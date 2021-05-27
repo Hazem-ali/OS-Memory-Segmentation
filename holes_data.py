@@ -9,13 +9,40 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import errordialog
 
 class Ui_HolesForm(object):
+
+    # here we pass data needed when this class is instantiated
+    # This is the constructor of the class
+    def __init__(self, memory_size, no_of_holes):
+        self.memory_size = memory_size
+        self.no_of_holes = no_of_holes
+
+    def openProcessWindow(self):
+
+        # Organizing variables
+        all_holes_tuples = []
+        for hole in self.AllTextBoxes:
+            try:
+                base = int(hole["Base"].text()) 
+                size = int(hole["Size"].text()) 
+                all_holes_tuples.append((base,size))
+            except:
+                # Invalid Numbers Situation
+                self.window = QtWidgets.QDialog()
+                self.ui = errordialog.Ui_Dialog("Please Write Valid Numbers")
+                self.ui.setupUi(self.window)
+                self.window.show()
+        
+                
+            
+
     def setupUi(self, HolesForm):
         HolesForm.setObjectName("HolesForm")
         HolesForm.resize(558, 452)
-        self.StartButton = QtWidgets.QPushButton(HolesForm)
+        self.StartButton = QtWidgets.QPushButton(
+            HolesForm, clicked=lambda: self.openProcessWindow())
         self.StartButton.setGeometry(QtCore.QRect(170, 390, 221, 41))
         self.StartButton.setObjectName("StartButton")
         self.scrollArea = QtWidgets.QScrollArea(HolesForm)
@@ -26,14 +53,17 @@ class Ui_HolesForm(object):
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 739, 379))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout = QtWidgets.QVBoxLayout(
+            self.scrollAreaWidgetContents)
         self.verticalLayout.setObjectName("verticalLayout")
         self.LabelGroup = QtWidgets.QGroupBox(self.scrollAreaWidgetContents)
         self.LabelGroup.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.LabelGroup.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.LabelGroup.sizePolicy().hasHeightForWidth())
         self.LabelGroup.setSizePolicy(sizePolicy)
         self.LabelGroup.setMinimumSize(QtCore.QSize(0, 50))
         self.LabelGroup.setTitle("")
@@ -63,47 +93,66 @@ class Ui_HolesForm(object):
         self.BaseAddressLabel.setFont(font)
         self.BaseAddressLabel.setObjectName("BaseAddressLabel")
         self.verticalLayout.addWidget(self.LabelGroup)
-        self.HoleGroup = QtWidgets.QGroupBox(self.scrollAreaWidgetContents)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.HoleGroup.sizePolicy().hasHeightForWidth())
-        self.HoleGroup.setSizePolicy(sizePolicy)
-        self.HoleGroup.setMinimumSize(QtCore.QSize(0, 50))
-        self.HoleGroup.setTitle("")
-        self.HoleGroup.setObjectName("HoleGroup")
-        self.HoleSizeSpin = QtWidgets.QSpinBox(self.HoleGroup)
-        self.HoleSizeSpin.setGeometry(QtCore.QRect(200, 10, 101, 22))
-        self.HoleSizeSpin.setObjectName("HoleSizeSpin")
-        self.H1 = QtWidgets.QLabel(self.HoleGroup)
-        self.H1.setGeometry(QtCore.QRect(-10, 0, 61, 31))
-        self.H1.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.H1.setAlignment(QtCore.Qt.AlignCenter)
-        self.H1.setObjectName("H1")
-        self.BaseAddressSpin = QtWidgets.QSpinBox(self.HoleGroup)
-        self.BaseAddressSpin.setGeometry(QtCore.QRect(70, 10, 101, 22))
-        self.BaseAddressSpin.setObjectName("BaseAddressSpin")
-        self.verticalLayout.addWidget(self.HoleGroup)
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-        self.retranslateUi(HolesForm)
-        QtCore.QMetaObject.connectSlotsByName(HolesForm)
+        self.AllTextBoxes = []  # each element here is a list that contain all entries for a hole
+        for i in range(self.no_of_holes):  # Here we add number of holes
+            HoleTextBoxes = {}
 
-    def retranslateUi(self, HolesForm):
+            self.HoleGroup = QtWidgets.QGroupBox(self.scrollAreaWidgetContents)
+            sizePolicy = QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            sizePolicy.setHeightForWidth(
+                self.HoleGroup.sizePolicy().hasHeightForWidth())
+
+            self.HoleGroup.setSizePolicy(sizePolicy)
+            self.HoleGroup.setMinimumSize(QtCore.QSize(0, 50))
+            self.HoleGroup.setTitle("")
+            self.HoleGroup.setObjectName("HoleGroup")
+
+            self.H1 = QtWidgets.QLabel(self.HoleGroup)
+            self.H1.setGeometry(QtCore.QRect(-10, 0, 61, 31))
+            self.H1.setFrameShadow(QtWidgets.QFrame.Raised)
+            self.H1.setAlignment(QtCore.Qt.AlignCenter)
+            self.H1.setObjectName("H"+str(i+1))
+
+            self.BaseAddressInput = QtWidgets.QLineEdit(self.HoleGroup)
+            self.BaseAddressInput.setGeometry(QtCore.QRect(70, 10, 113, 20))
+            self.BaseAddressInput.setObjectName("BaseAddressInput")
+
+            self.HoleSizeInput = QtWidgets.QLineEdit(self.HoleGroup)
+            self.HoleSizeInput.setGeometry(QtCore.QRect(200, 10, 113, 20))
+            self.HoleSizeInput.setObjectName("HoleSizeInput")
+
+            self.verticalLayout.addWidget(self.HoleGroup)
+            self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
+            self.retranslateUi(HolesForm, "H"+str(i+1))
+            QtCore.QMetaObject.connectSlotsByName(HolesForm)
+
+            # Adding Spins into the Dict for each hole
+            HoleTextBoxes["Base"] = self.BaseAddressInput
+            HoleTextBoxes["Size"] = self.HoleSizeInput
+            # Adding This Dict to the big list that contains all spins
+            self.AllTextBoxes.append(HoleTextBoxes)
+            ##############################################
+
+    def retranslateUi(self, HolesForm, HoleName):
         _translate = QtCore.QCoreApplication.translate
         HolesForm.setWindowTitle(_translate("HolesForm", "Form"))
         self.StartButton.setText(_translate("HolesForm", "Start "))
         self.HoleLabel.setText(_translate("HolesForm", "Hole"))
         self.HoleSizeLabel.setText(_translate("HolesForm", "Size"))
         self.BaseAddressLabel.setText(_translate("HolesForm", "Base Address"))
-        self.H1.setText(_translate("HolesForm", "H1"))
+        self.H1.setText(_translate("HolesForm", HoleName))
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    HolesForm = QtWidgets.QWidget()
-    ui = Ui_HolesForm()
-    ui.setupUi(HolesForm)
-    HolesForm.show()
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     import sys
+#     app = QtWidgets.QApplication(sys.argv)
+#     HolesForm = QtWidgets.QWidget()
+#     ui = Ui_HolesForm()
+#     ui.setupUi(HolesForm)
+#     HolesForm.show()
+#     sys.exit(app.exec_())

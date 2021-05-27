@@ -491,7 +491,7 @@
      <rect>
       <x>230</x>
       <y>90</y>
-      <width>131</width>
+      <width>91</width>
       <height>31</height>
      </rect>
     </property>
@@ -540,13 +540,13 @@
      <string>Memory Manager</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="memSizeBox">
+   <widget class="QLineEdit" name="memSizeBox">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>220</x>
       <y>120</y>
-      <width>131</width>
-      <height>22</height>
+      <width>111</width>
+      <height>20</height>
      </rect>
     </property>
    </widget>

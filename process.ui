@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>Processes</class>
+ <widget class="QWidget" name="Processes">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -45,7 +45,7 @@
    <property name="title">
     <string/>
    </property>
-   <widget class="QRadioButton" name="radioButton_3">
+   <widget class="QRadioButton" name="WorstFitButton">
     <property name="geometry">
      <rect>
       <x>150</x>
@@ -58,7 +58,7 @@
      <string>Worst Fit</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton">
+   <widget class="QRadioButton" name="FirstFitButton">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -74,7 +74,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_2">
+   <widget class="QRadioButton" name="BestFitButton">
     <property name="geometry">
      <rect>
       <x>80</x>

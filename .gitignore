@@ -7,3 +7,5 @@ test1.py
 # MainWindow.ui
 maintemp.py
 /temp files
+/.vscode
+/__pycache__

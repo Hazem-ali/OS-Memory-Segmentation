@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import process
 import errordialog
 
 class Ui_HolesForm(object):
@@ -34,6 +35,12 @@ class Ui_HolesForm(object):
                 self.ui = errordialog.Ui_Dialog("Please Write Valid Numbers")
                 self.ui.setupUi(self.window)
                 self.window.show()
+        # if integer parsing has no errors
+            self.window = QtWidgets.QMainWindow()
+            self.ui = process.Ui_Processes(self.memory_size, all_holes_tuples)
+            self.ui.setupUi(self.window)
+            self.window.show()
+            
         
                 
             

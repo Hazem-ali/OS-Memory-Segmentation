@@ -11,14 +11,31 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(513, 473)
-        self.label = QtWidgets.QLabel(Form)
+class Ui_Processes(object):
+    
+    # Here we pass data needed when this class is instantiated
+    # This is the constructor of the class
+    def __init__(self, memory_size, all_holes_tuples):
+        self.memory_size = memory_size
+        self.all_holes_tuples = all_holes_tuples
+        
+        # Here we must open the drawing window
+        
+    def Chosen_Algorithm(self):
+        if self.FirstFitButton.isChecked():
+            return self.FirstFitButton.text()
+        if self.BestFitButton.isChecked():
+            return self.BestFitButton.text()
+        if self.WorstFitButton.isChecked():
+            return self.WorstFitButton.text()
+        
+    def setupUi(self, Processes):
+        Processes.setObjectName("Processes")
+        Processes.resize(513, 473)
+        self.label = QtWidgets.QLabel(Processes)
         self.label.setGeometry(QtCore.QRect(40, 50, 201, 21))
         self.label.setObjectName("label")
-        self.radioGroup = QtWidgets.QGroupBox(Form)
+        self.radioGroup = QtWidgets.QGroupBox(Processes)
         self.radioGroup.setGeometry(QtCore.QRect(40, 70, 231, 51))
         font = QtGui.QFont()
         font.setBold(False)
@@ -27,18 +44,18 @@ class Ui_Form(object):
         self.radioGroup.setFont(font)
         self.radioGroup.setTitle("")
         self.radioGroup.setObjectName("radioGroup")
-        self.radioButton_3 = QtWidgets.QRadioButton(self.radioGroup)
-        self.radioButton_3.setGeometry(QtCore.QRect(150, 20, 82, 17))
-        self.radioButton_3.setObjectName("radioButton_3")
-        self.radioButton = QtWidgets.QRadioButton(self.radioGroup)
-        self.radioButton.setGeometry(QtCore.QRect(10, 20, 82, 17))
-        self.radioButton.setChecked(True)
-        self.radioButton.setObjectName("radioButton")
-        self.radioButton_2 = QtWidgets.QRadioButton(self.radioGroup)
-        self.radioButton_2.setGeometry(QtCore.QRect(80, 20, 82, 17))
-        self.radioButton_2.setChecked(False)
-        self.radioButton_2.setObjectName("radioButton_2")
-        self.SegmentTextBox = QtWidgets.QPlainTextEdit(Form)
+        self.WorstFitButton = QtWidgets.QRadioButton(self.radioGroup)
+        self.WorstFitButton.setGeometry(QtCore.QRect(150, 20, 82, 17))
+        self.WorstFitButton.setObjectName("WorstFitButton")
+        self.FirstFitButton = QtWidgets.QRadioButton(self.radioGroup)
+        self.FirstFitButton.setGeometry(QtCore.QRect(10, 20, 82, 17))
+        self.FirstFitButton.setChecked(True)
+        self.FirstFitButton.setObjectName("FirstFitButton")
+        self.BestFitButton = QtWidgets.QRadioButton(self.radioGroup)
+        self.BestFitButton.setGeometry(QtCore.QRect(80, 20, 82, 17))
+        self.BestFitButton.setChecked(False)
+        self.BestFitButton.setObjectName("BestFitButton")
+        self.SegmentTextBox = QtWidgets.QPlainTextEdit(Processes)
         self.SegmentTextBox.setGeometry(QtCore.QRect(40, 200, 281, 161))
         font = QtGui.QFont()
         font.setPointSize(11)
@@ -48,43 +65,43 @@ class Ui_Form(object):
         self.SegmentTextBox.setStatusTip("")
         self.SegmentTextBox.setPlainText("")
         self.SegmentTextBox.setObjectName("SegmentTextBox")
-        self.label_2 = QtWidgets.QLabel(Form)
+        self.label_2 = QtWidgets.QLabel(Processes)
         self.label_2.setGeometry(QtCore.QRect(40, 140, 301, 51))
         self.label_2.setObjectName("label_2")
-        self.AllocateButton = QtWidgets.QPushButton(Form)
+        self.AllocateButton = QtWidgets.QPushButton(Processes)
         self.AllocateButton.setGeometry(QtCore.QRect(40, 410, 91, 31))
         self.AllocateButton.setObjectName("AllocateButton")
-        self.DeallocateButton = QtWidgets.QPushButton(Form)
+        self.DeallocateButton = QtWidgets.QPushButton(Processes)
         self.DeallocateButton.setGeometry(QtCore.QRect(390, 410, 91, 31))
         self.DeallocateButton.setObjectName("DeallocateButton")
-        self.allProcessesMenu = QtWidgets.QComboBox(Form)
+        self.allProcessesMenu = QtWidgets.QComboBox(Processes)
         self.allProcessesMenu.setGeometry(QtCore.QRect(390, 380, 91, 22))
         self.allProcessesMenu.setObjectName("allProcessesMenu")
-        self.ProcessLabel = QtWidgets.QLabel(Form)
+        self.ProcessLabel = QtWidgets.QLabel(Processes)
         self.ProcessLabel.setGeometry(QtCore.QRect(190, 20, 211, 21))
         self.ProcessLabel.setObjectName("ProcessLabel")
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(Processes)
+        QtCore.QMetaObject.connectSlotsByName(Processes)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, Processes):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.label.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Allocation Algorithm </span></p></body></html>"))
-        self.radioButton_3.setText(_translate("Form", "Worst Fit"))
-        self.radioButton.setText(_translate("Form", "First Fit"))
-        self.radioButton_2.setText(_translate("Form", "Best Fit"))
-        self.label_2.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Type process segment this way: </span><span style=\" font-size:10pt; font-weight:600; color:#5d0000;\">Name:Size</span></p><p><span style=\" font-size:10pt; font-weight:600; color:#ff0000;\">Note: Separate segments by enter</span></p></body></html>"))
-        self.AllocateButton.setText(_translate("Form", "Allocate"))
-        self.DeallocateButton.setText(_translate("Form", "Deallocate"))
-        self.ProcessLabel.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: P1 </span></p></body></html>"))
+        Processes.setWindowTitle(_translate("Processes", "Form"))
+        self.label.setText(_translate("Processes", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Allocation Algorithm </span></p></body></html>"))
+        self.WorstFitButton.setText(_translate("Processes", "Worst Fit"))
+        self.FirstFitButton.setText(_translate("Processes", "First Fit"))
+        self.BestFitButton.setText(_translate("Processes", "Best Fit"))
+        self.label_2.setText(_translate("Processes", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Type process segment this way: </span><span style=\" font-size:10pt; font-weight:600; color:#5d0000;\">Name:Size</span></p><p><span style=\" font-size:10pt; font-weight:600; color:#ff0000;\">Note: Separate segments by enter</span></p></body></html>"))
+        self.AllocateButton.setText(_translate("Processes", "Allocate"))
+        self.DeallocateButton.setText(_translate("Processes", "Deallocate"))
+        self.ProcessLabel.setText(_translate("Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: P1 </span></p></body></html>"))
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Form = QtWidgets.QWidget()
-    ui = Ui_Form()
-    ui.setupUi(Form)
-    Form.show()
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     import sys
+#     app = QtWidgets.QApplication(sys.argv)
+#     Processes = QtWidgets.QWidget()
+#     ui = Ui_Processes()
+#     ui.setupUi(Processes)
+#     Processes.show()
+#     sys.exit(app.exec_())

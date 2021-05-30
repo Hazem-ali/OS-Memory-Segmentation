@@ -7,26 +7,28 @@ class Drawer_Window(Frame):
 
     def __init__(self, memory_size):
         super().__init__()
+        self.ProcessColor = "#F69090"
+        self.HoleColor = "#90DCF6"
+        self.OldProcessColor = "#C090F6"
         self.memory_size = memory_size
         self.initUI()
 
-    def MemRect(self, y0, y1, color):
+    # Draw Rectangle into canvas
+    def Rect(self, y0, y1, details):
 
-        self.canvas.create_rectangle(55, 20, 145, 480,
-                                     outline=color, fill=color)
-        self.canvas.create_text(55-15, 20, text=0)
-        self.canvas.create_text(55-15, 480, text=y1)
+        scale = 480.0 / self.memory_size
+        # Creating new y0, y1 variables that has real coordinates
+        new_y0 = (y0+60)*scale
+        new_y1 = y1*scale
 
-    def Rect(self, y0, y1, color):
+        self.canvas.create_rectangle(55, new_y0, 145, new_y1,
+                                     outline=details["color"], fill=details["color"])
+        self.canvas.create_text(55-15, new_y0, text=y0)
+        self.canvas.create_text(55-15, new_y1, text=y1)
+        self.canvas.create_text((55+145) / 2, (new_y0+new_y0) / 2,
+                                text=details["name"], font="bold 11 italic")
 
-        ratio = 480 / mem_size
-        # xy0 = y0 % ratio
-        # xy1 = y1 % ratio
-        self.canvas.create_rectangle(55, (y0+60)*(480.0/mem_size), 145, y1*(480.0/mem_size),
-                                     outline=color, fill=color)
-        self.canvas.create_text(55-15, (y0+60)*(480.0/mem_size), text=y0)
-        self.canvas.create_text(55-15, y1*(480.0/mem_size), text=y1)
-
+    # Color_Guide Rectangles
     def Guide_Rect(self, x0, y0, x1, y1, color, innerText):
         self.canvas.create_rectangle(x0, y0, x1, y1,
                                      outline=color, fill=color)
@@ -37,8 +39,8 @@ class Drawer_Window(Frame):
     def draw(self, Drawing_List):
         # each element in Drawing_List is tuple (start, end, color)
         for element in Drawing_List:
-
-            self.Rect(element[0], element[1], element[2])
+            y0, y1, details = element
+            self.Rect(y0, y1, details)
 
         self.canvas.mainloop()
 
@@ -59,19 +61,19 @@ class Drawer_Window(Frame):
 
         # Creating Guide Rectangles
         self.canvas.create_text(310, 20, text="Guide", font="bold 16")
-        self.Guide_Rect(250, 40, 370, 80, "#F69090", "Process")
-        self.Guide_Rect(250, 80, 370, 120, "#90DCF6", "Hole")
-        self.Guide_Rect(250, 120, 370, 160, "#C090F6", "Old Process")
+        self.Guide_Rect(250, 40, 370, 80, self.ProcessColor, "Process")
+        self.Guide_Rect(250, 80, 370, 120, self.HoleColor, "Hole")
+        self.Guide_Rect(250, 120, 370, 160,
+                        self.OldProcessColor, "Old Process")
 
         self.canvas.pack(fill=BOTH, expand=1)
 
 
-ls = [ (80, 120, "blue"),
-      (450, 800, "blue"), (1200, 2500, "black")]
-# ls = [(0, 480, "red"), (60, 80, "green")]
-# ls = [(0, 2800, "red")]
+# ls = [(80, 120, "blue"),
+#       (450, 800, "blue"), (1200, 2500, "black")]
+# # ls = [(0, 480, "red"), (60, 80, "green")]
+# # ls = [(0, 2800, "red")]
 
-drawer = Drawer_Window(2800)
-# drawer.MemRect(0,2000,"black")
-drawer.draw(ls)
-
+# drawer = Drawer_Window(2800)
+# # drawer.MemRect(0,2000,"black")
+# drawer.draw(ls)

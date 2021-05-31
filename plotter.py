@@ -1,4 +1,5 @@
 from tkinter import Button, Canvas, Frame, BOTH
+from tkinter.font import names
 
 mem_size = 2800
 
@@ -18,23 +19,24 @@ class Drawer_Window(Frame):
 
         scale = 480.0 / self.memory_size
         # Creating new y0, y1 variables that has real coordinates
-        new_y0 = (y0+60)*scale
+        new_y0 = (y0 + 100)*scale
         new_y1 = y1*scale
-
         self.canvas.create_rectangle(55, new_y0, 145, new_y1,
                                      outline=details["color"], fill=details["color"])
+        # self.canvas.create_rectangle(55, new_y0, 145, new_y1,
+        #                              outline=self.HoleColor, fill=self.HoleColor)
         self.canvas.create_text(55-15, new_y0, text=y0)
         self.canvas.create_text(55-15, new_y1, text=y1)
-        self.canvas.create_text((55+145) / 2, (new_y0+new_y0) / 2,
-                                text=details["name"], font="bold 11 italic")
+        self.canvas.create_text((55+145) / 2, (new_y0 + new_y1) / 2,
+                                text=details["name"], font="bold 8 italic")
 
     # Color_Guide Rectangles
     def Guide_Rect(self, x0, y0, x1, y1, color, innerText):
         self.canvas.create_rectangle(x0, y0, x1, y1,
                                      outline=color, fill=color)
         # self.canvas.create_text(x0-5, y0, text='0')
-        self.canvas.create_text((x1+x0) / 2, (y1+y0) / 2,
-                                text=innerText, font="bold 11 italic")
+        self.canvas.create_text((x1 + x0) / 2, (y1 + y0) / 2,
+                                text=innerText, font="bold 8 italic")
 
     def draw(self, Drawing_List):
         # each element in Drawing_List is tuple (start, end, color)
@@ -56,8 +58,8 @@ class Drawer_Window(Frame):
 
         self.canvas = Canvas(self, width=400, height=500)
 
-        # Drawing Main Memmory
-        self.Rect(0, self.memory_size-1, "#C090F6")
+        # # Drawing Main Memmory
+        self.Rect(0, self.memory_size-1, {"color": "#C090F6", "name": ""})
 
         # Creating Guide Rectangles
         self.canvas.create_text(310, 20, text="Guide", font="bold 16")

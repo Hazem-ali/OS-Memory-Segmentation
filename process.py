@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import plotter
+import errordialog
 
 
 class Ui_Processes(object):
@@ -24,8 +25,13 @@ class Ui_Processes(object):
         # Declaring Memory Elements
         # Each element in Drawing_List will be (y0, y1, details) where details is dict with name & color
         self.old_processes = {}
+        self.Allocated_Processes_Dict = {}
         self.Drawing_List = []
+        self.current_process_name = 1
+
         self.Initialize_Memory()
+        self.PrepareDrawing()  # Modifies Drawing List
+
         # Make function that appends to Drawing_List then Draw it
 
         # Here we must open the drawing window
@@ -38,27 +44,91 @@ class Ui_Processes(object):
         if self.WorstFitButton.isChecked():
             return self.WorstFitButton.text()
 
+    def Open_Error_Window(self, message):
+        self.window = QtWidgets.QDialog()
+        self.ui = errordialog.Ui_Dialog(message)
+        self.ui.setupUi(self.window)
+        self.window.show()
+
     def Initialize_Memory(self):
+        # This function makes old processes positions and puts them into old_processes dict
         holes_start_end = self.sizeTo_STARTEND(self.holes_with_size)
         holes_start_end.sort(key=lambda x: x[0])  # Sort array from start
         counter = 0
         for i in range(len(holes_start_end)):
             start, end = holes_start_end[i]
-            Temp_Old_Name = "Old_P" + str(counter)
+            Old_Name = "Old_P" + str(counter)
             if i == 0:
                 if start == 0:
                     continue
                 else:
-                    self.old_processes[Temp_Old_Name] = (0, end-1)
+                    self.old_processes[Old_Name] = (0, start - 1)
                     counter += 1
+
             elif i == len(holes_start_end) - 1:
-                self.old_processes[Temp_Old_Name] = (end, self.memory_size - 1)
+                if end == self.memory_size - 1:
+                    continue
+                else:
+                    self.old_processes[Old_Name] = (
+                        end + 1, self.memory_size - 1)
 
             else:
-                self.old_processes[Temp_Old_Name] = (
+                self.old_processes[Old_Name] = (
                     end + 1, holes_start_end[i + 1][0] - 1)
                 counter += 1
+        print("old processes:", self.old_processes)
         return
+
+    def PrepareDrawing(self):
+        # This function makes all data ready for drawing
+        self.Drawing_List = []
+        # details = {}
+
+        # Working with holes
+
+        # details["color"] = self.drawer.HoleColor
+        # details["name"] = "Hole"
+        holes_start_end = self.sizeTo_STARTEND(self.holes_with_size)
+        for start, end in holes_start_end:
+            self.Drawing_List.append(
+                (start, end, {"name": "Hole", "color": self.drawer.HoleColor}))
+        # print("details in holes:", details)
+
+        # Working with Old_Processes
+        # {Old_P1: (start,end)}
+        # details["color"] = self.drawer.OldProcessColor
+
+        for name, value in self.old_processes.items():
+            start, end = value
+            # details["name"] = str(name)
+            self.Drawing_List.append(
+                (start, end, {"name": name, "color": self.drawer.OldProcessColor}))
+        # print("details in old:", details)
+
+        # Working with Processes
+
+        # details["color"] = self.drawer.ProcessColor
+
+        for process in self.Allocated_Processes_Dict.keys():
+
+            # {​​​'class': (900, 1499), 'code': (300, 699), 'seg': (0, 199)}​​​
+            # name of process
+            # detalis={​​​ "p1"}​​​
+            for segment_name, segments_tuple in self.Allocated_Processes_Dict[process].items():
+                # now add a new hole
+                start, end = segments_tuple
+                name = str(process + ": " + segment_name)
+                self.Drawing_List.append(
+                    (start, end, {"name": name, "color": self.drawer.ProcessColor}))
+        # print("details in process:", details)
+        return
+
+    def add_old_processes(self):
+        for name in self.old_processes.keys():
+            self.update_menu(name)
+        return
+        
+        
 
     def Deallocate(self):
         # Deallocate Algorithm and drawing
@@ -69,12 +139,44 @@ class Ui_Processes(object):
 
     def Allocate(self):
         # Retrieve Data From TextBox
-        process_segments = self.SegmentTextBox.toPlainText().split('\n')
-        print(process_segments)
-        for segment in process_segments:
+        process_entry = self.SegmentTextBox.toPlainText().split('\n')
+        process_name = "P" + str(self.current_process_name)
+        process_data = {}
+        print(process_entry)
+        for segment in process_entry:
             name, size = segment.split(':')
-
+            process_data[name] = int(size)
             print(name, size)
+
+        algorithm = self.Chosen_Algorithm()
+
+        if algorithm == "First Fit":
+            if (self.first_fit(process_name, process_data)):
+
+                self.current_process_name += 1
+                self.update_menu(process_name)
+                self.updateTitle("P" + str(self.current_process_name))
+                self.PrepareDrawing()  # Modifies Drawing List
+                self.drawer.delete_window()
+                self.drawer.draw(self.Drawing_List)
+
+            else:
+                self.Open_Error_Window("There's No Free Space")
+
+        elif algorithm == "Best Fit":
+            if (self.best_fit(process_name, process_data)):
+                self.PrepareDrawing()  # Modifies Drawing List
+                self.drawer.draw(self.Drawing_List)
+            else:
+                self.Open_Error_Window("There's No Free Space")
+
+        elif algorithm == "Worst Fit":
+            if (self.worst_fit(process_name, process_data)):
+                self.PrepareDrawing()  # Modifies Drawing List
+                self.drawer.draw(self.Drawing_List)
+            else:
+                self.Open_Error_Window("There's No Free Space")
+
         """
         Code:400
         Mem:200
@@ -114,27 +216,27 @@ class Ui_Processes(object):
             result.append((start, size))
         return result
 
-    def first_fit(self, holes_with_size, process_name, process_data):
+    def first_fit(self, process_name, process_data):
 
         # this for check
-        safe_holes_sizes = holes_with_size[:]
+        safe_holes_sizes = self.holes_with_size[:]
 
         one_process_dict = {}
         temp_dict = {}
 
         # normal memory sort
-        holes_with_size.sort(key=lambda x: x[0])
+        self.holes_with_size.sort(key=lambda x: x[0])
 
-        print("holes sort smallest base  : ", holes_with_size)
+        print("holes sort smallest base  : ", self.holes_with_size)
         print("the procces : ", process_data)
 
         for segments_name, segments_size in process_data.items():
             # compare segments_size with holes
-            for hole_index in range(len(holes_with_size)):
+            for hole_index in range(len(self.holes_with_size)):
                 # get size of hole
                 # (100,299)
-                start = holes_with_size[hole_index][0]
-                size_of_el_hole_ele_3leha_eldor = holes_with_size[hole_index][1]
+                start = self.holes_with_size[hole_index][0]
+                size_of_el_hole_ele_3leha_eldor = self.holes_with_size[hole_index][1]
                 end = start + size_of_el_hole_ele_3leha_eldor-1
 
                 if segments_size <= size_of_el_hole_ele_3leha_eldor:
@@ -150,16 +252,16 @@ class Ui_Processes(object):
                     modified_hole = (
                         taken_space_by_segment_tuple[1]+1, size_of_el_hole_ele_3leha_eldor-segments_size)
                     # the update pb
-                    holes_with_size[hole_index] = modified_hole
+                    self.holes_with_size[hole_index] = modified_hole
                     break
                 # finished for loop for allocate a segment in temp_allocate[]
-            print("updated array in loop : ", holes_with_size)
+            print("updated array in loop : ", self.holes_with_size)
 
         if len(process_data.keys()) > len(temp_dict.keys()):
 
             # holes_with_size=safe_holes_sizes
             for i in range(len(safe_holes_sizes)):
-                holes_with_size[i] = safe_holes_sizes[i]
+                self.holes_with_size[i] = safe_holes_sizes[i]
             print("not safe ya negm")
             return False
 
@@ -170,19 +272,19 @@ class Ui_Processes(object):
         print("process with tuples : ", one_process_dict)
         # { 'p1' : {'code':(500,900) , seg' : (1000,1010)} ,'p2' : {'code':(500,900) , 'seg' : (1000,1010)} }
 
-        old_processes_allocated_memory_dict.update(one_process_dict)
-        print("the dict : ", old_processes_allocated_memory_dict)
+        self.Allocated_Processes_Dict.update(one_process_dict)
+        print("the dict : ", self.Allocated_Processes_Dict)
         return True
 
-    def best_fit(self, holes_with_size, process_name, process_data):
+    def best_fit(self, process_name, process_data):
         # this for check
-        safe_holes_sizes = holes_with_size[:]
+        safe_holes_sizes = self.holes_with_size[:]
 
         one_process_dict = {}
         temp_dict = {}
         # holes sorted from small to big size
-        holes_with_size.sort(key=lambda x: x[1])
-        print("holes sort : ", holes_with_size)
+        self.holes_with_size.sort(key=lambda x: x[1])
+        print("holes sort : ", self.holes_with_size)
         # should sort the segments big to small
         sorte = sorted(process_data.items(), key=lambda x: x[1], reverse=True)
         sorted_process = dict(sorte)
@@ -190,10 +292,10 @@ class Ui_Processes(object):
 
         for segments_name, segments_size in sorted_process.items():
             # compare segments_size with holes
-            for hole_index in range(len(holes_with_size)):
+            for hole_index in range(len(self.holes_with_size)):
                 # get size of hole
-                start = holes_with_size[hole_index][0]
-                size = holes_with_size[hole_index][1]
+                start = self.holes_with_size[hole_index][0]
+                size = self.holes_with_size[hole_index][1]
                 end = start + size - 1
 
                 if segments_size <= size:
@@ -206,14 +308,14 @@ class Ui_Processes(object):
                     modified_hole = (
                         taken_space_by_segment_tuple[1]+1, size-segments_size)
                     # the update pb
-                    holes_with_size[hole_index] = modified_hole
+                    self.holes_with_size[hole_index] = modified_hole
                     break
             # finished for loop for allocate a segment in temp_allocate[]
 
         if len(process_data.keys()) > len(temp_dict.keys()):
             # holes_with_size=safe_holes_sizes
             for i in range(len(safe_holes_sizes)):
-                holes_with_size[i] = safe_holes_sizes[i]
+                self.holes_with_size[i] = safe_holes_sizes[i]
             print("not safe ya negm")
             return False
 
@@ -223,18 +325,18 @@ class Ui_Processes(object):
         one_process_dict = {process_name: temp_dict}
         print("process with tuples : ", one_process_dict)
         # { 'p1' : {'code':(500,900) , seg' : (1000,1010)} ,'p2' : {'code':(500,900) , 'seg' : (1000,1010)} }
-        old_processes_allocated_memory_dict.update(one_process_dict)
-        print("the dict : ", old_processes_allocated_memory_dict)
+        self.Allocated_Processes_Dict.update(one_process_dict)
+        print("the dict : ", self.Allocated_Processes_Dict)
         return True
 
-    def worst_fit(self, holes_with_size, process_name, process_data):
+    def worst_fit(self, process_name, process_data):
         # this for check
-        safe_holes_sizes = holes_with_size[:]
+        safe_holes_sizes = self.holes_with_size[:]
 
         one_process_dict = {}
         temp_dict = {}
-        holes_with_size.sort(key=lambda x: x[1], reverse=True)
-        print("holes sort with size : ", holes_with_size)
+        self.holes_with_size.sort(key=lambda x: x[1], reverse=True)
+        print("holes sort with size : ", self.holes_with_size)
         # should sort the segments small to big
         sorte = sorted(process_data.items(), key=lambda x: x[1])
         sorted_process = dict(sorte)
@@ -243,13 +345,13 @@ class Ui_Processes(object):
         print("################################")
         for segments_name, segments_size in sorted_process.items():
             # compare segments_size with holes
-            for hole_index in range(len(holes_with_size)):
+            for hole_index in range(len(self.holes_with_size)):
                 # pb here
                 # we take the same tuple every time
                 # must update th sizes
                 # get size of hole
-                start = holes_with_size[hole_index][0]
-                size = holes_with_size[hole_index][1]
+                start = self.holes_with_size[hole_index][0]
+                size = self.holes_with_size[hole_index][1]
                 end = start + size - 1
 
                 if segments_size <= size:
@@ -262,7 +364,7 @@ class Ui_Processes(object):
                     modified_hole = (
                         taken_space_by_segment_tuple[1]+1, size-segments_size)
                     # the update pb
-                    holes_with_size[hole_index] = modified_hole
+                    self.holes_with_size[hole_index] = modified_hole
                     break
 
             # finished for loop for allocate a segment in temp_allocate[]
@@ -273,7 +375,7 @@ class Ui_Processes(object):
 
             # holes_with_size=safe_holes_sizes
             for i in range(len(safe_holes_sizes)):
-                holes_with_size[i] = safe_holes_sizes[i]
+                self.holes_with_size[i] = safe_holes_sizes[i]
             print("not safe ya negm")
             return False
 
@@ -283,25 +385,25 @@ class Ui_Processes(object):
         one_process_dict = {process_name: temp_dict}
         print("process with tuples : ", one_process_dict)
         # { 'p1' : {'code':(500,900) , seg' : (1000,1010)} ,'p2' : {'code':(500,900) , 'seg' : (1000,1010)} }
-        old_processes_allocated_memory_dict.update(one_process_dict)
-        print("the dict : ", old_processes_allocated_memory_dict)
+        self.Allocated_Processes_Dict.update(one_process_dict)
+        print("the dict : ", self.Allocated_Processes_Dict)
         return True
 
-    def deallocate(self, procces_to_delete, array_holes, old_processes_allocated_memory_dict):
+    def deallocate(self, procces_to_delete, array_holes, Allocated_Processes_Dict):
 
         awhole_new_holes_list = []
         # get Name
         # search on old Memory
-        # if procces_to_delete in old_processes_allocated_memory_dict:
+        # if procces_to_delete in self.Allocated_Processes_Dict:
         #{'code':(500,900) , 'seg' : (1000,1010)}
-        contents = old_processes_allocated_memory_dict[procces_to_delete]
+        contents = self.Allocated_Processes_Dict[procces_to_delete]
         for segments_name, segments_tuple in contents.items():
             # now add a new hole
             array_holes.append(segments_tuple)
         print(array_holes)
         # add the holees ended
         # delete that process from dict
-        del old_processes_allocated_memory_dict[procces_to_delete]
+        del self.Allocated_Processes_Dict[procces_to_delete]
         # merge memory
         # sort holes
         array_holes.sort(key=lambda x: x[0])
@@ -335,7 +437,7 @@ class Ui_Processes(object):
             # [(0,1500),(1501,2000),(2500,3000)]
         array_holes = awhole_new_holes_list[:]
         awhole_new_holes_list.clear()
-        print("dict ", old_processes_allocated_memory_dict)
+        print("dict ", self.Allocated_Processes_Dict)
         print("array ", array_holes)
         return array_holes
     ############################################
@@ -392,8 +494,9 @@ class Ui_Processes(object):
         self.ProcessLabel = QtWidgets.QLabel(Processes)
         self.ProcessLabel.setGeometry(QtCore.QRect(190, 20, 211, 21))
         self.ProcessLabel.setObjectName("ProcessLabel")
-
+        
         self.retranslateUi(Processes)
+        self.add_old_processes()
         QtCore.QMetaObject.connectSlotsByName(Processes)
 
     def retranslateUi(self, Processes):
@@ -412,14 +515,30 @@ class Ui_Processes(object):
         self.AllocateButton.setText(_translate("Processes", "Allocate"))
         self.DeallocateButton.setText(_translate("Processes", "Deallocate"))
         self.ProcessLabel.setText(_translate(
-            "Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: P1 </span></p></body></html>"))
+            "Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: P"+str(self.current_process_name)+" </span></p></body></html>"))
+
+    def update_menu(self, name):
+        # This function updates menu and process name in the window
+        _translate = QtCore.QCoreApplication.translate
+        self.allProcessesMenu.addItem(name, name)
+        self.allProcessesMenu.setItemText(
+            int(name.find("P")+1), _translate("MainWindow", name))
+
+    def updateTitle(self, new_name):
+        # This function updates menu and process name in the window
+        _translate = QtCore.QCoreApplication.translate
+        self.ProcessLabel.setText(_translate(
+            "Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: "+new_name+" </span></p></body></html>"))
 
 
 if __name__ == "__main__":
     import sys
+    holes = [(600, 500), (1200, 900), (2600, 1000)]
     app = QtWidgets.QApplication(sys.argv)
     Processes = QtWidgets.QWidget()
-    ui = Ui_Processes(1, 1)
+    ui = Ui_Processes(5800, holes)
     ui.setupUi(Processes)
     Processes.show()
+    # Plotting the window
+    ui.drawer.draw(ui.Drawing_List)
     sys.exit(app.exec_())

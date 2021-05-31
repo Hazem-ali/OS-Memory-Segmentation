@@ -28,7 +28,7 @@ class Ui_Processes(object):
         self.Allocated_Processes_Dict = {}
         self.Drawing_List = []
         self.current_process_name = 1
-
+        self.menuIndex = 0
         self.Initialize_Memory()
         self.PrepareDrawing()  # Modifies Drawing List
 
@@ -64,6 +64,13 @@ class Ui_Processes(object):
                 else:
                     self.old_processes[Old_Name] = (0, start - 1)
                     counter += 1
+                    # For first hole, we check before it and after it
+                    if end + 1 != holes_start_end[i+1][0]:
+                        Old_Name = "Old_P" + str(counter)
+                        self.old_processes[Old_Name] = (
+                            end + 1, holes_start_end[i + 1][0] - 1)
+                        counter += 1
+                        
 
             elif i == len(holes_start_end) - 1:
                 if end == self.memory_size - 1:
@@ -82,117 +89,89 @@ class Ui_Processes(object):
     def PrepareDrawing(self):
         # This function makes all data ready for drawing
         self.Drawing_List = []
-        # details = {}
 
         # Working with holes
-
-        # details["color"] = self.drawer.HoleColor
-        # details["name"] = "Hole"
         holes_start_end = self.sizeTo_STARTEND(self.holes_with_size)
         for start, end in holes_start_end:
             self.Drawing_List.append(
                 (start, end, {"name": "Hole", "color": self.drawer.HoleColor}))
-        # print("details in holes:", details)
 
         # Working with Old_Processes
         # {Old_P1: (start,end)}
-        # details["color"] = self.drawer.OldProcessColor
-
         for name, value in self.old_processes.items():
             start, end = value
-            # details["name"] = str(name)
             self.Drawing_List.append(
                 (start, end, {"name": name, "color": self.drawer.OldProcessColor}))
-        # print("details in old:", details)
 
         # Working with Processes
-
-        # details["color"] = self.drawer.ProcessColor
-
         for process in self.Allocated_Processes_Dict.keys():
 
             # {​​​'class': (900, 1499), 'code': (300, 699), 'seg': (0, 199)}​​​
             # name of process
-            # detalis={​​​ "p1"}​​​
             for segment_name, segments_tuple in self.Allocated_Processes_Dict[process].items():
                 # now add a new hole
                 start, end = segments_tuple
                 name = str(process + ": " + segment_name)
                 self.Drawing_List.append(
                     (start, end, {"name": name, "color": self.drawer.ProcessColor}))
-        # print("details in process:", details)
-        return
+        return self.Drawing_List
 
-    def add_old_processes(self):
+    def Add_Old_Processes(self):
         for name in self.old_processes.keys():
             self.update_menu(name)
         return
         
         
 
-    def Deallocate(self):
-        # Deallocate Algorithm and drawing
-
-        # Removing item from menu
-        # self.allProcessesMenu.removeItem(deallocated_item_index)
-        return
 
     def Allocate(self):
         # Retrieve Data From TextBox
         process_entry = self.SegmentTextBox.toPlainText().split('\n')
         process_name = "P" + str(self.current_process_name)
         process_data = {}
-        print(process_entry)
+        print("Process Entry:", process_entry)
         for segment in process_entry:
             name, size = segment.split(':')
             process_data[name] = int(size)
+            print("name", "size")
             print(name, size)
 
         algorithm = self.Chosen_Algorithm()
-
+        allocated = False
+        
         if algorithm == "First Fit":
             if (self.first_fit(process_name, process_data)):
-
-                self.current_process_name += 1
-                self.update_menu(process_name)
-                self.updateTitle("P" + str(self.current_process_name))
-                self.PrepareDrawing()  # Modifies Drawing List
-                self.drawer.delete_window()
-                self.drawer.draw(self.Drawing_List)
-
+                allocated = True
             else:
-                self.Open_Error_Window("There's No Free Space")
-
+                allocated = False
         elif algorithm == "Best Fit":
             if (self.best_fit(process_name, process_data)):
-                self.PrepareDrawing()  # Modifies Drawing List
-                self.drawer.draw(self.Drawing_List)
+                allocated = True
             else:
-                self.Open_Error_Window("There's No Free Space")
-
+                allocated = False
         elif algorithm == "Worst Fit":
             if (self.worst_fit(process_name, process_data)):
-                self.PrepareDrawing()  # Modifies Drawing List
-                self.drawer.draw(self.Drawing_List)
+                allocated = True
             else:
-                self.Open_Error_Window("There's No Free Space")
+                allocated = False
+
+        if allocated:
+            # Then we are to draw the result
+            self.current_process_name += 1
+            self.update_menu(process_name)
+            self.updateTitle("P" + str(self.current_process_name))
+            self.PrepareDrawing()  # Modifies Drawing List
+            self.drawer.delete_window()
+            self.drawer.draw(self.Drawing_List)
+        else:
+            self.Open_Error_Window("There's No Free Space")
+            
 
         """
         Code:400
         Mem:200
         
         """
-        # allocate Algorithm and drawing
-
-        # Retrieve everything to draw
-        # Modifying tuples to add color to them
-
-        # self.graph.delete_window()
-        # Draw Here
-
-        # Adding item from menu
-        # self.allProcessesMenu.setItemText(i+1, _translate("MainWindow", processes_array[i].name))
-
         return
 
     # DANGER!!! Process Allocation Functions
@@ -389,25 +368,40 @@ class Ui_Processes(object):
         print("the dict : ", self.Allocated_Processes_Dict)
         return True
 
-    def deallocate(self, procces_to_delete, array_holes, Allocated_Processes_Dict):
-
+    def Deallocate(self):
+        # Deallocate Algorithm and drawing
+        array_holes = self.sizeTo_STARTEND(self.holes_with_size)
+        # Removing item from menu
+        menu = self.allProcessesMenu
+        procces_to_delete = menu.currentText()
+        if procces_to_delete == '':
+            self.Open_Error_Window("Nothing to clear")
+            return
+        menu.removeItem(menu.findText(menu.currentText()))
+        
         awhole_new_holes_list = []
         # get Name
         # search on old Memory
         # if procces_to_delete in self.Allocated_Processes_Dict:
         #{'code':(500,900) , 'seg' : (1000,1010)}
-        contents = self.Allocated_Processes_Dict[procces_to_delete]
-        for segments_name, segments_tuple in contents.items():
-            # now add a new hole
-            array_holes.append(segments_tuple)
+        if procces_to_delete.startswith("Old"):
+            old_process_tuple = self.old_processes[procces_to_delete]
+            array_holes.append(old_process_tuple)
+            del self.old_processes[procces_to_delete]
+        else:
+            contents = self.Allocated_Processes_Dict[procces_to_delete]
+            for _, segments_tuple in contents.items():
+                # now add a new hole
+                array_holes.append(segments_tuple)
+            del self.Allocated_Processes_Dict[procces_to_delete]
         print(array_holes)
         # add the holees ended
         # delete that process from dict
-        del self.Allocated_Processes_Dict[procces_to_delete]
+        # del self.Allocated_Processes_Dict[procces_to_delete]
         # merge memory
         # sort holes
         array_holes.sort(key=lambda x: x[0])
-        print(array_holes)
+        print("array holes",array_holes)
         awhole_new_holes_list = array_holes[:]
         awhole_new_holes_list.clear()
         #
@@ -437,9 +431,14 @@ class Ui_Processes(object):
             # [(0,1500),(1501,2000),(2500,3000)]
         array_holes = awhole_new_holes_list[:]
         awhole_new_holes_list.clear()
-        print("dict ", self.Allocated_Processes_Dict)
+        print("Old_Processes_Dict",self.old_processes)
+        print("Allocated Processes ", self.Allocated_Processes_Dict)
         print("array ", array_holes)
-        return array_holes
+        self.holes_with_size = self.startTo_SIZE(array_holes)
+        self.drawer.delete_window()
+        x = self.PrepareDrawing()  # Modifies Drawing List
+        self.drawer.draw(self.Drawing_List)
+        return
     ############################################
 
     def setupUi(self, Processes):
@@ -485,7 +484,7 @@ class Ui_Processes(object):
             Processes, clicked=lambda: self.Allocate())
         self.AllocateButton.setGeometry(QtCore.QRect(40, 410, 91, 31))
         self.AllocateButton.setObjectName("AllocateButton")
-        self.DeallocateButton = QtWidgets.QPushButton(Processes)
+        self.DeallocateButton = QtWidgets.QPushButton(Processes, clicked=lambda:self.Deallocate())
         self.DeallocateButton.setGeometry(QtCore.QRect(390, 410, 91, 31))
         self.DeallocateButton.setObjectName("DeallocateButton")
         self.allProcessesMenu = QtWidgets.QComboBox(Processes)
@@ -496,16 +495,13 @@ class Ui_Processes(object):
         self.ProcessLabel.setObjectName("ProcessLabel")
         
         self.retranslateUi(Processes)
-        self.add_old_processes()
+        self.Add_Old_Processes()
         QtCore.QMetaObject.connectSlotsByName(Processes)
 
     def retranslateUi(self, Processes):
         _translate = QtCore.QCoreApplication.translate
-        # for i in range(len(processes_array)):
-        #     self.allProcessesMenu.setItemText(i+1, _translate("MainWindow", processes_array[i].name))
-        # self.allProcessesMenu.findText()
 
-        Processes.setWindowTitle(_translate("Processes", "Form"))
+        Processes.setWindowTitle(_translate("Processes", "Processes Form"))
         self.label.setText(_translate(
             "Processes", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Allocation Algorithm </span></p></body></html>"))
         self.WorstFitButton.setText(_translate("Processes", "Worst Fit"))
@@ -521,8 +517,8 @@ class Ui_Processes(object):
         # This function updates menu and process name in the window
         _translate = QtCore.QCoreApplication.translate
         self.allProcessesMenu.addItem(name, name)
-        self.allProcessesMenu.setItemText(
-            int(name.find("P")+1), _translate("MainWindow", name))
+        self.allProcessesMenu.setItemText(self.menuIndex, _translate("MainWindow", name))
+        self.menuIndex += 1
 
     def updateTitle(self, new_name):
         # This function updates menu and process name in the window

@@ -48,6 +48,7 @@ class Drawer_Window(Frame):
 
     def delete_window(self):
         self.master.quit()
+        # self.canvas.delete('all')
         self.canvas.quit()
 
     def initUI(self):

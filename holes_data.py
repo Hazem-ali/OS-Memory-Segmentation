@@ -20,6 +20,12 @@ class Ui_HolesForm(object):
         self.memory_size = memory_size
         self.no_of_holes = no_of_holes
 
+    def Open_Error_Window(self,message):
+        self.window = QtWidgets.QDialog()
+        self.ui = errordialog.Ui_Dialog(message)
+        self.ui.setupUi(self.window)
+        self.window.show()
+    
     def openProcessWindow(self):
 
         # Organizing variables
@@ -29,17 +35,20 @@ class Ui_HolesForm(object):
                 base = int(hole["Base"].text()) 
                 size = int(hole["Size"].text()) 
                 all_holes_tuples.append((base,size))
+                if(base < 0 or size < 0):
+                    self.Open_Error_Window("Please Write Positive Numbers")
+                    return
             except:
                 # Invalid Numbers Situation
-                self.window = QtWidgets.QDialog()
-                self.ui = errordialog.Ui_Dialog("Please Write Valid Numbers")
-                self.ui.setupUi(self.window)
-                self.window.show()
+                self.Open_Error_Window("Please Write Valid Numbers")
+                return
         # if integer parsing has no errors
-            self.window = QtWidgets.QMainWindow()
-            self.ui = process.Ui_Processes(self.memory_size, all_holes_tuples)
-            self.ui.setupUi(self.window)
-            self.window.show()
+        self.window = QtWidgets.QWidget()
+        self.ProcessUI = process.Ui_Processes(self.memory_size, all_holes_tuples)
+        self.ProcessUI.setupUi(self.window)
+        # Plotting the window
+        self.window.show()
+        self.ProcessUI.drawer.draw(self.ProcessUI.Drawing_List)
             
         
                 
@@ -159,7 +168,7 @@ class Ui_HolesForm(object):
 #     import sys
 #     app = QtWidgets.QApplication(sys.argv)
 #     HolesForm = QtWidgets.QWidget()
-#     ui = Ui_HolesForm()
+#     ui = Ui_HolesForm(5000,2)
 #     ui.setupUi(HolesForm)
 #     HolesForm.show()
 #     sys.exit(app.exec_())

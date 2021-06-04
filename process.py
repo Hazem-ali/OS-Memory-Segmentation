@@ -21,7 +21,6 @@ class Ui_Processes(object):
         self.memory_size = memory_size
         self.holes_with_size = holes_with_size
         self.drawer = plotter.Drawer_Window(self.memory_size)
-
         # Declaring Memory Elements
         # Each element in Drawing_List will be (y0, y1, details) where details is dict with name & color
         self.old_processes = {}
@@ -31,7 +30,7 @@ class Ui_Processes(object):
         self.menuIndex = 0
         self.Initialize_Memory()
         self.PrepareDrawing()  # Modifies Drawing List
-
+        
         # Make function that appends to Drawing_List then Draw it
 
         # Here we must open the drawing window
@@ -70,7 +69,6 @@ class Ui_Processes(object):
                         self.old_processes[Old_Name] = (
                             end + 1, holes_start_end[i + 1][0] - 1)
                         counter += 1
-                        
 
             elif i == len(holes_start_end) - 1:
                 if end == self.memory_size - 1:
@@ -108,6 +106,7 @@ class Ui_Processes(object):
 
             # {​​​'class': (900, 1499), 'code': (300, 699), 'seg': (0, 199)}​​​
             # name of process
+            
             for segment_name, segments_tuple in self.Allocated_Processes_Dict[process].items():
                 # now add a new hole
                 start, end = segments_tuple
@@ -120,9 +119,6 @@ class Ui_Processes(object):
         for name in self.old_processes.keys():
             self.update_menu(name)
         return
-        
-        
-
 
     def Allocate(self):
         # Retrieve Data From TextBox
@@ -131,14 +127,26 @@ class Ui_Processes(object):
         process_data = {}
         print("Process Entry:", process_entry)
         for segment in process_entry:
+            if segment.find(":") == -1:
+                self.Open_Error_Window("Invalid Input Pattern")
+                return
             name, size = segment.split(':')
-            process_data[name] = int(size)
+            # Size error handling
+            try:
+                process_data[name] = int(size)
+            except:
+                self.Open_Error_Window("Please Enter Valid Size")
+                return
+            if process_data[name]<0:
+                self.Open_Error_Window("Please Enter Positive Number")
+                return
+                
             print("name", "size")
             print(name, size)
 
         algorithm = self.Chosen_Algorithm()
         allocated = False
-        
+
         if algorithm == "First Fit":
             if (self.first_fit(process_name, process_data)):
                 allocated = True
@@ -165,7 +173,6 @@ class Ui_Processes(object):
             self.drawer.draw(self.Drawing_List)
         else:
             self.Open_Error_Window("There's No Free Space")
-            
 
         """
         Code:400
@@ -368,6 +375,40 @@ class Ui_Processes(object):
         print("the dict : ", self.Allocated_Processes_Dict)
         return True
 
+    def Merge_Holes(self, array_holes):
+        # TODO: Remove merge algorithm below and make it here clearly
+        
+        # Big Loop to check for entire list merging
+        while True:
+            array_holes.sort(key=lambda x: x[0])
+            merge_flag = False
+            print("Array_Holes after sorting:", array_holes)
+            # Loop for one merge
+            for index in range(len(array_holes)):
+
+                # Bypassing last hole because no further check
+                if index == len(array_holes) - 1:
+                    continue
+
+                if array_holes[index + 1][0] - array_holes[index][1] == 1:
+                    # Taking values before deleting
+                    merged_hole = (array_holes[index][0], array_holes[index + 1][1])
+                    # NOTE: index change after deleting, so deleting must be before appending
+                    del array_holes[index + 1]
+                    del array_holes[index]
+                    array_holes.append(merged_hole)
+                    print("array holes after one merge:", array_holes)
+                    merge_flag = True
+                    break
+                
+            if merge_flag == False:
+                # No further merge is needed
+                break
+        
+        # Final Sorting
+        array_holes.sort(key=lambda x: x[0])
+        return array_holes
+
     def Deallocate(self):
         # Deallocate Algorithm and drawing
         array_holes = self.sizeTo_STARTEND(self.holes_with_size)
@@ -378,12 +419,13 @@ class Ui_Processes(object):
             self.Open_Error_Window("Nothing to clear")
             return
         menu.removeItem(menu.findText(menu.currentText()))
-        
-        awhole_new_holes_list = []
+
         # get Name
         # search on old Memory
         # if procces_to_delete in self.Allocated_Processes_Dict:
         #{'code':(500,900) , 'seg' : (1000,1010)}
+        
+        # Removing Process from its list and adding space into hole list
         if procces_to_delete.startswith("Old"):
             old_process_tuple = self.old_processes[procces_to_delete]
             array_holes.append(old_process_tuple)
@@ -394,44 +436,11 @@ class Ui_Processes(object):
                 # now add a new hole
                 array_holes.append(segments_tuple)
             del self.Allocated_Processes_Dict[procces_to_delete]
-        print(array_holes)
-        # add the holees ended
-        # delete that process from dict
-        # del self.Allocated_Processes_Dict[procces_to_delete]
-        # merge memory
-        # sort holes
-        array_holes.sort(key=lambda x: x[0])
-        print("array holes",array_holes)
-        awhole_new_holes_list = array_holes[:]
-        awhole_new_holes_list.clear()
-        #
-        x = 0
-        for hole_index in range(len(array_holes)):
-            # print(hole_index)
-            if (hole_index == len(array_holes)-1):
-                # print("if")
-                # break
-                continue
-            else:
-                if x:
-                    x -= 1
-                    continue
-                print(array_holes[hole_index][1], array_holes[hole_index+1][0])
-                if (array_holes[hole_index][1] - array_holes[hole_index+1][0]) == -1:
-                    # new hole = (strat1 , end 2)
-                    awhole_new_hole = (
-                        array_holes[hole_index][0], array_holes[hole_index+1][1])
-                    awhole_new_holes_list.append(awhole_new_hole)
-                    print("whole in if ", awhole_new_holes_list)
-                    x += 1
-                else:
-                    # normal hole
-                    awhole_new_holes_list.append(array_holes[hole_index])
-                    print("whole in else ", awhole_new_holes_list)
-            # [(0,1500),(1501,2000),(2500,3000)]
-        array_holes = awhole_new_holes_list[:]
-        awhole_new_holes_list.clear()
-        print("Old_Processes_Dict",self.old_processes)
+        print("Array_Holes before merge:", array_holes)
+        
+        
+        array_holes = self.Merge_Holes(array_holes)
+        print("Old_Processes_Dict", self.old_processes)
         print("Allocated Processes ", self.Allocated_Processes_Dict)
         print("array ", array_holes)
         self.holes_with_size = self.startTo_SIZE(array_holes)
@@ -484,7 +493,8 @@ class Ui_Processes(object):
             Processes, clicked=lambda: self.Allocate())
         self.AllocateButton.setGeometry(QtCore.QRect(40, 410, 91, 31))
         self.AllocateButton.setObjectName("AllocateButton")
-        self.DeallocateButton = QtWidgets.QPushButton(Processes, clicked=lambda:self.Deallocate())
+        self.DeallocateButton = QtWidgets.QPushButton(
+            Processes, clicked=lambda: self.Deallocate())
         self.DeallocateButton.setGeometry(QtCore.QRect(390, 410, 91, 31))
         self.DeallocateButton.setObjectName("DeallocateButton")
         self.allProcessesMenu = QtWidgets.QComboBox(Processes)
@@ -493,7 +503,7 @@ class Ui_Processes(object):
         self.ProcessLabel = QtWidgets.QLabel(Processes)
         self.ProcessLabel.setGeometry(QtCore.QRect(190, 20, 211, 21))
         self.ProcessLabel.setObjectName("ProcessLabel")
-        
+
         self.retranslateUi(Processes)
         self.Add_Old_Processes()
         QtCore.QMetaObject.connectSlotsByName(Processes)
@@ -517,7 +527,8 @@ class Ui_Processes(object):
         # This function updates menu and process name in the window
         _translate = QtCore.QCoreApplication.translate
         self.allProcessesMenu.addItem(name, name)
-        self.allProcessesMenu.setItemText(self.menuIndex, _translate("MainWindow", name))
+        self.allProcessesMenu.setItemText(
+            self.menuIndex, _translate("MainWindow", name))
         self.menuIndex += 1
 
     def updateTitle(self, new_name):
@@ -527,14 +538,14 @@ class Ui_Processes(object):
             "Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: "+new_name+" </span></p></body></html>"))
 
 
-if __name__ == "__main__":
-    import sys
-    holes = [(600, 500), (1200, 900), (2600, 1000)]
-    app = QtWidgets.QApplication(sys.argv)
-    Processes = QtWidgets.QWidget()
-    ui = Ui_Processes(5800, holes)
-    ui.setupUi(Processes)
-    Processes.show()
-    # Plotting the window
-    ui.drawer.draw(ui.Drawing_List)
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     import sys
+#     holes = [(600, 500), (1200, 900), (2600, 1000)]
+#     app = QtWidgets.QApplication(sys.argv)
+#     Processes = QtWidgets.QWidget()
+#     ui = Ui_Processes(5800, holes)
+#     ui.setupUi(Processes)
+#     Processes.show()
+#     # Plotting the window
+#     ui.drawer.draw(ui.Drawing_List)
+#     sys.exit(app.exec_())

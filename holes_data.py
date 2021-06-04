@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import process
 import errordialog
 
+
 class Ui_HolesForm(object):
 
     # here we pass data needed when this class is instantiated
@@ -20,21 +21,21 @@ class Ui_HolesForm(object):
         self.memory_size = memory_size
         self.no_of_holes = no_of_holes
 
-    def Open_Error_Window(self,message):
+    def Open_Error_Window(self, message):
         self.window = QtWidgets.QDialog()
         self.ui = errordialog.Ui_Dialog(message)
         self.ui.setupUi(self.window)
         self.window.show()
-    
+
     def openProcessWindow(self):
 
         # Organizing variables
         all_holes_tuples = []
         for hole in self.AllTextBoxes:
             try:
-                base = int(hole["Base"].text()) 
-                size = int(hole["Size"].text()) 
-                all_holes_tuples.append((base,size))
+                base = int(hole["Base"].text())
+                size = int(hole["Size"].text())
+                all_holes_tuples.append((base, size))
                 if(base < 0 or size < 0):
                     self.Open_Error_Window("Please Write Positive Numbers")
                     return
@@ -42,17 +43,22 @@ class Ui_HolesForm(object):
                 # Invalid Numbers Situation
                 self.Open_Error_Window("Please Write Valid Numbers")
                 return
+
+        hole_test = sorted(all_holes_tuples, key=lambda x: x[0], reverse=True)
+        for item in hole_test:
+            test_base, test_size = item
+            if test_base + test_size >= self.memory_size:
+                self.Open_Error_Window("Hole Cannot Exceed Memory Size")
+                return
+
         # if integer parsing has no errors
         self.window = QtWidgets.QWidget()
-        self.ProcessUI = process.Ui_Processes(self.memory_size, all_holes_tuples)
+        self.ProcessUI = process.Ui_Processes(
+            self.memory_size, all_holes_tuples)
         self.ProcessUI.setupUi(self.window)
         # Plotting the window
         self.window.show()
         self.ProcessUI.drawer.draw(self.ProcessUI.Drawing_List)
-            
-        
-                
-            
 
     def setupUi(self, HolesForm):
         HolesForm.setObjectName("HolesForm")

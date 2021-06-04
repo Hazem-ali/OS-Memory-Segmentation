@@ -9,28 +9,40 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
+
 
 class Ui_Dialog(object):
     def __init__(self, error_message):
         self.error_message =  error_message
-        
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(417, 127)
+        Dialog.resize(416, 127)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
+        Dialog.setSizePolicy(sizePolicy)
+        Dialog.setSizeGripEnabled(False)
+        Dialog.setModal(False)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(300, 80, 101, 41))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.ErrorMessage = QtWidgets.QLabel(Dialog)
-        self.ErrorMessage.setGeometry(QtCore.QRect(20, 10, 371, 71))
+        self.ErrorMessage.setGeometry(QtCore.QRect(80, 10, 371, 71))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ErrorMessage.sizePolicy().hasHeightForWidth())
         self.ErrorMessage.setSizePolicy(sizePolicy)
         self.ErrorMessage.setObjectName("ErrorMessage")
+        self.label = QtWidgets.QLabel(Dialog)
+        self.label.setGeometry(QtCore.QRect(20, 20, 51, 51))
+        self.label.setText("")
+        self.label.setPixmap(QtGui.QPixmap("images.jpg"))
+        self.label.setScaledContents(True)
+        self.label.setObjectName("label")
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -42,13 +54,6 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Error"))
         self.ErrorMessage.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"+self.error_message+"</span></p></body></html>"))
 
-
-# def Show_Error(message):
-#     window = QtWidgets.QDialog()
-#     ui = Ui_Dialog(message)
-#     ui.setupUi(window)
-#     window.show()
-    
 
 # if __name__ == "__main__":
 #     import sys

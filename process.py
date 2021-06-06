@@ -30,10 +30,8 @@ class Ui_Processes(object):
         self.menuIndex = 0
         self.Initialize_Memory()
         self.PrepareDrawing()  # Modifies Drawing List
-        
-        # Make function that appends to Drawing_List then Draw it
 
-        # Here we must open the drawing window
+
 
     def Chosen_Algorithm(self):
         if self.FirstFitButton.isChecked():
@@ -106,7 +104,7 @@ class Ui_Processes(object):
 
             # {​​​'class': (900, 1499), 'code': (300, 699), 'seg': (0, 199)}​​​
             # name of process
-            
+
             for segment_name, segments_tuple in self.Allocated_Processes_Dict[process].items():
                 # now add a new hole
                 start, end = segments_tuple
@@ -137,10 +135,10 @@ class Ui_Processes(object):
             except:
                 self.Open_Error_Window("Please Enter Valid Size")
                 return
-            if process_data[name]<0:
+            if process_data[name] < 0:
                 self.Open_Error_Window("Please Enter Positive Number")
                 return
-                
+
             print("name", "size")
             print(name, size)
 
@@ -377,7 +375,7 @@ class Ui_Processes(object):
 
     def Merge_Holes(self, array_holes):
         # TODO: Remove merge algorithm below and make it here clearly
-        
+
         # Big Loop to check for entire list merging
         while True:
             array_holes.sort(key=lambda x: x[0])
@@ -392,7 +390,8 @@ class Ui_Processes(object):
 
                 if array_holes[index + 1][0] - array_holes[index][1] == 1:
                     # Taking values before deleting
-                    merged_hole = (array_holes[index][0], array_holes[index + 1][1])
+                    merged_hole = (array_holes[index]
+                                   [0], array_holes[index + 1][1])
                     # NOTE: index change after deleting, so deleting must be before appending
                     del array_holes[index + 1]
                     del array_holes[index]
@@ -400,11 +399,11 @@ class Ui_Processes(object):
                     print("array holes after one merge:", array_holes)
                     merge_flag = True
                     break
-                
+
             if merge_flag == False:
                 # No further merge is needed
                 break
-        
+
         # Final Sorting
         array_holes.sort(key=lambda x: x[0])
         return array_holes
@@ -424,7 +423,7 @@ class Ui_Processes(object):
         # search on old Memory
         # if procces_to_delete in self.Allocated_Processes_Dict:
         #{'code':(500,900) , 'seg' : (1000,1010)}
-        
+
         # Removing Process from its list and adding space into hole list
         if procces_to_delete.startswith("Old"):
             old_process_tuple = self.old_processes[procces_to_delete]
@@ -437,8 +436,7 @@ class Ui_Processes(object):
                 array_holes.append(segments_tuple)
             del self.Allocated_Processes_Dict[procces_to_delete]
         print("Array_Holes before merge:", array_holes)
-        
-        
+
         array_holes = self.Merge_Holes(array_holes)
         print("Old_Processes_Dict", self.old_processes)
         print("Allocated Processes ", self.Allocated_Processes_Dict)
@@ -449,6 +447,22 @@ class Ui_Processes(object):
         self.drawer.draw(self.Drawing_List)
         return
     ############################################
+
+    def Free_All(self):
+
+        # Freeing All Lists, Dictionaries and Menus
+        self.old_processes.clear()
+        self.Allocated_Processes_Dict.clear()
+        self.holes_with_size.clear()
+        self.allProcessesMenu.clear()
+
+        # Adding Hole with entire memory size
+        self.holes_with_size.append((0, self.memory_size))
+
+        # Drawing Free Memory
+        self.drawer.delete_window()
+        self.PrepareDrawing()  # Modifies Drawing List
+        self.drawer.draw(self.Drawing_List)
 
     def setupUi(self, Processes):
         Processes.setObjectName("Processes")
@@ -503,6 +517,28 @@ class Ui_Processes(object):
         self.ProcessLabel = QtWidgets.QLabel(Processes)
         self.ProcessLabel.setGeometry(QtCore.QRect(190, 20, 211, 21))
         self.ProcessLabel.setObjectName("ProcessLabel")
+        self.Free_All_Button = QtWidgets.QPushButton(
+            Processes, clicked=lambda: self.Free_All())
+        self.Free_All_Button.setGeometry(QtCore.QRect(240, 410, 131, 31))
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active,
+                         QtGui.QPalette.ButtonText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(255, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive,
+                         QtGui.QPalette.ButtonText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(120, 120, 120))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled,
+                         QtGui.QPalette.ButtonText, brush)
+        self.Free_All_Button.setPalette(palette)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.Free_All_Button.setFont(font)
+        self.Free_All_Button.setObjectName("Free_All_Button")
 
         self.retranslateUi(Processes)
         self.Add_Old_Processes()
@@ -517,14 +553,16 @@ class Ui_Processes(object):
         self.WorstFitButton.setText(_translate("Processes", "Worst Fit"))
         self.FirstFitButton.setText(_translate("Processes", "First Fit"))
         self.BestFitButton.setText(_translate("Processes", "Best Fit"))
-        self.label_2.setText(_translate("Processes", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Type process segment this way: </span><span style=\" font-size:10pt; font-weight:600; color:#5d0000;\">Name:Size</span></p><p><span style=\" font-size:10pt; font-weight:600; color:#ff0000;\">Note: Separate segments by enter</span></p></body></html>"))
+        self.label_2.setText(_translate("Processes", "<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">Type process segment this way: </span><span style=\" font-size:10pt; font-weight:600; color:#5d0000;\">Name:Size</span></p><p><span style=\" font-size:10pt; font-weight:600; color:#ff0000;\">Note: Separate segments by lines</span></p></body></html>"))
         self.AllocateButton.setText(_translate("Processes", "Allocate"))
         self.DeallocateButton.setText(_translate("Processes", "Deallocate"))
+        self.Free_All_Button.setText(
+            _translate("Processes", "Free All Memory"))
         self.ProcessLabel.setText(_translate(
             "Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: P"+str(self.current_process_name)+" </span></p></body></html>"))
 
     def update_menu(self, name):
-        # This function updates menu and process name in the window
+        # This function updates processes menu
         _translate = QtCore.QCoreApplication.translate
         self.allProcessesMenu.addItem(name, name)
         self.allProcessesMenu.setItemText(
@@ -532,7 +570,7 @@ class Ui_Processes(object):
         self.menuIndex += 1
 
     def updateTitle(self, new_name):
-        # This function updates menu and process name in the window
+        # This function updates process name in the window
         _translate = QtCore.QCoreApplication.translate
         self.ProcessLabel.setText(_translate(
             "Processes", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Process Name: "+new_name+" </span></p></body></html>"))

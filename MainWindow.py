@@ -246,7 +246,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Memory Manager"))
         self.holesLabel.setText(_translate("MainWindow", "# of Holes"))
         self.memSizeLabel.setText(_translate("MainWindow", "Memory Size"))
         self.HolesButton.setText(_translate("MainWindow", "Enter Holes Data"))

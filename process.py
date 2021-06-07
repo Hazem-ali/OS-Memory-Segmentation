@@ -52,6 +52,20 @@ class Ui_Processes(object):
         holes_start_end = self.sizeTo_STARTEND(self.holes_with_size)
         holes_start_end.sort(key=lambda x: x[0])  # Sort array from start
         counter = 0
+        
+        # If we have only one hole
+        if(len(holes_start_end) == 1):
+            start, end = holes_start_end[0]
+            Old_Name = "Old_P" + str(counter)
+            counter += 1
+            self.old_processes[Old_Name] = (0, start - 1)
+            
+            Old_Name = "Old_P" + str(counter)
+            self.old_processes[Old_Name] = (
+                end + 1,  self.memory_size - 1)
+            return
+
+        # If we are here, then we have more than one hole        
         for i in range(len(holes_start_end)):
             start, end = holes_start_end[i]
             Old_Name = "Old_P" + str(counter)

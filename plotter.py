@@ -21,14 +21,28 @@ class Drawer_Window(Frame):
 
         scale = 480.0 / self.memory_size
         # Creating new y0, y1 variables that has real coordinates
-        new_y0 = (y0 + 100)*scale
-        new_y1 = y1*scale
+        new_y0 = 0
+        new_y1 = 0
+        # new_y0 = (y0 + 100)*scale
+        # new_y1 = (y1 + 100)*scale
+        
+        
+        # Adjusting Scale depending on memory size
+        if self.memory_size < 5000:
+            new_y0 = (y0 + 100)*scale
+            new_y1 = (y1 + 100)*scale
+        else:
+            new_y0 = (y0 + 100)*scale
+            new_y1 = ((y1 )*scale) + 5
+            
+            
+
         self.canvas.create_rectangle(55, new_y0, 145, new_y1+10,
                                      outline=details["color"], fill=details["color"])
         # self.canvas.create_rectangle(55, new_y0, 145, new_y1,
         #                              outline=self.HoleColor, fill=self.HoleColor)
         self.canvas.create_text(55-15, new_y0+5, text=y0)
-        self.canvas.create_text(55-15, new_y1+5, text=y1)
+        self.canvas.create_text(55-15, new_y1-5, text=y1)
         self.canvas.create_text((55+145) / 2, (new_y0+5 + new_y1+5) / 2,
                                 text=details["name"], font="bold 8 italic")
 
@@ -68,7 +82,7 @@ class Drawer_Window(Frame):
 
         self.pack(fill=BOTH, expand=1)
 
-        self.canvas = Canvas(self, width=400, height=500)
+        self.canvas = Canvas(self, width=400, height=550)
 
         # # Drawing Main Memmory
         # self.Rect(0, self.memory_size-1, {"color": "red", "name": ""})

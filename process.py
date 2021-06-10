@@ -71,6 +71,9 @@ class Ui_Processes(object):
             Old_Name = "Old_P" + str(counter)
             if i == 0:
                 if start == 0:
+                    self.old_processes[Old_Name] = (end+1, holes_start_end[i + 1][0] - 1)
+                    counter += 1
+                    
                     continue
                 else:
                     self.old_processes[Old_Name] = (0, start - 1)
